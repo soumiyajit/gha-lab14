@@ -1,0 +1,27 @@
+name: Variable Interpolation
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: 
+
+env:
+  DB_HOST: "cluster0.mongodb.net"
+  DB_USER: "admin_user"
+
+jobs:
+  build-connection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Construct and Verify URI
+        env:
+          # We are building a string using existing Env Vars and a Secret
+          FULL_MONGO_URI: "mongodb+srv://${{ env.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ env.DB_HOST }}/synapse_db"
+        run: |
+          echo "Connecting to Host: $DB_HOST"
+          echo "Constructed URI: $FULL_MONGO_URI"
+          
+          # Pass it to a dummy Node script to prove it works
+          node -e "console.log('Node received a URI of length: ' + process.env.FULL_MONGO_URI.length)"
